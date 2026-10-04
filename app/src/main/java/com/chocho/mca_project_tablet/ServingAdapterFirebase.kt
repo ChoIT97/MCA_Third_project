@@ -9,6 +9,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.NonDisposableHandle.parent
 
+/**
+ * [테이블 카드 안쪽 주문 목록 어댑터]
+ *
+ * "메뉴 이름 / 수량 : n" 형식으로 한 줄씩 표시한다.
+ */
 class ServingAdapterFirebase(private val context: Context): RecyclerView.Adapter<ServingAdapterFirebase.ViewHolder>() {
 
     private var meatList = mutableListOf<Meat>()

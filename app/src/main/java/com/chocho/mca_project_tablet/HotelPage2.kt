@@ -16,6 +16,15 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
 //도착후
+/**
+ * [호텔 모드 - 서랍 열기 / 복귀]
+ *
+ * HotelPage1 에서 기록한 Hotel/Lock1~3 값으로 열어야 할 서랍 칸만 잠금 해제하고 자물쇠 이미지를 보여준다.
+ * 손님이 물건을 꺼내고 로봇이 Start="Home_Success" 를 보내면 서랍을 다시 잠그고 HotelMain 으로 복귀,
+ * "Home_Fail"(문이 열려 있음)이면 "문을 닫아 주세요" 토스트.
+ *
+ * 주의: activity_page2.xml 과 lock6~8 id 가 저장소에 없어 그대로는 빌드되지 않는다.
+ */
 class HotelPage2 : AppCompatActivity() {
 
     //imageView 변수
@@ -29,6 +38,7 @@ class HotelPage2 : AppCompatActivity() {
     private lateinit var imageLock3: String
 
     //Intent 변수
+    // 주의: 이 화면에서는 초기화하지 않아서 NFC 값이 바뀌면 UninitializedPropertyAccessException 으로 종료된다.
     private lateinit var intentLoding: Intent
     private lateinit var intentHotelMain: Intent
 
@@ -68,6 +78,7 @@ class HotelPage2 : AppCompatActivity() {
         hotelStart.setValue("Question1")
 
         //호텔의 자물쇠 이미지
+        // 열어야 할 칸(…_Unlock)은 서랍 모터를 해제하고 열린 자물쇠 이미지로, 나머지는 잠긴 이미지로
         hotelListener = object : ValueEventListener {
 
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -114,6 +125,7 @@ class HotelPage2 : AppCompatActivity() {
         hotel.addValueEventListener(hotelListener) //리스터 작동
 
         //돌아가는 코드
+        // 로봇의 복귀 신호 처리: 성공이면 전부 잠그고 대기 화면으로, 실패면 문 닫기 안내
         startListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val startValue = snapshot.value
@@ -156,6 +168,8 @@ class HotelPage2 : AppCompatActivity() {
         }
         hotelStart.addValueEventListener(startListener)
 
+        // 로봇에 끼운 모듈(NFC 태그)이 바뀌면 로딩 화면을 거쳐 해당 모드로 전환한다.
+        // NFC 값: "None"=처음 화면, "Hotel"=호텔 모드, "Serving"=서빙 모드
         nfc.addValueEventListener(object : ValueEventListener {
 
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -194,6 +208,10 @@ class HotelPage2 : AppCompatActivity() {
     }
 
     //커스텀 메세지
+    /**
+     * 화면 가운데에 커스텀 토스트(activity_custom_toast.xml)를 띄운다.
+     * 주의: activity_custom_toast.xml 레이아웃이 저장소에 없어 그대로는 빌드되지 않는다.
+     */
     private fun customToastView(text: String) {
         val inflater = layoutInflater
         val layout: View = inflater.inflate(R.layout.activity_custom_toast, findViewById(R.id.toast_layout_root))

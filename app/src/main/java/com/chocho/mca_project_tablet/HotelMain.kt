@@ -18,6 +18,12 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import java.util.*
 
+/**
+ * [호텔 모드 - 대기 화면]
+ *
+ * 로봇 얼굴 화면. 터치하면 호실 입력 화면(HotelPage1)으로 이동한다.
+ * 처음 진입("key"="1")하면 "호텔화면 업데이트 완료되었습니다." 토스트를 띄운다.
+ */
 class HotelMain : AppCompatActivity() {
 
 
@@ -68,6 +74,7 @@ class HotelMain : AppCompatActivity() {
             else -> {} //그후
 
         }
+        // 이전 배달 정보(Hotel/go, Lock1~3) 초기화
         hotel.removeValue() //이동 값 제거
 
 
@@ -79,6 +86,7 @@ class HotelMain : AppCompatActivity() {
 
 
         //메인페이지 클릭시
+        // 얼굴 터치 → 호실 입력 화면
         robot.setOnClickListener {
 
             netPageIntent = Intent(this, HotelPage1::class.java)
@@ -88,6 +96,8 @@ class HotelMain : AppCompatActivity() {
 
         }
 
+        // 로봇에 끼운 모듈(NFC 태그)이 바뀌면 로딩 화면을 거쳐 해당 모드로 전환한다.
+        // NFC 값: "None"=처음 화면, "Hotel"=호텔 모드, "Serving"=서빙 모드
         nfc.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val nfcValue = snapshot.value
@@ -125,6 +135,10 @@ class HotelMain : AppCompatActivity() {
 
     }
 
+    /**
+     * 화면 가운데에 커스텀 토스트(activity_custom_toast.xml)를 띄운다.
+     * 주의: activity_custom_toast.xml 레이아웃이 저장소에 없어 그대로는 빌드되지 않는다.
+     */
     private fun customToastView(text: String) {
         val inflater = layoutInflater
         val layout: View = inflater.inflate(R.layout.activity_custom_toast, findViewById<ViewGroup>(R.id.toast_layout_root))

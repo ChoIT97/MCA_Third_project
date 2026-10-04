@@ -21,8 +21,18 @@ import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * [서빙 모드 - 서빙할 주문 목록]
+ *
+ * Firebase "master" 노드(MCA_Restaurant 테이블 주문 앱이 결제 후 저장한 주문)를 읽어
+ * 테이블 카드(ServingAdapter)를 가로로 나열한다. 카드의 [이 동] → 로봇 출발.
+ * 상단: 시각, 모듈 결속 상태(체인 아이콘), 배터리
+ */
 class ServingPage1 : AppCompatActivity() {
 
+    // master 의 자식 키 목록 → 카드 개수가 된다.
+    // 주의: master 의 키는 테이블 번호가 아니라 주문 항목 순번(0,1,2…)이고,
+    // 이 목록을 비우지 않고 계속 add 하므로 데이터가 갱신될 때마다 카드가 중복으로 늘어난다.
     private val keyList = mutableListOf<String>()
 
     private val database = Firebase.database
@@ -45,6 +55,7 @@ class ServingPage1 : AppCompatActivity() {
 
 
         //모듈 잠금 해제 코드
+        // 체인 아이콘 터치 → 모듈 결속 해제 요청
         moduleImg.setOnClickListener {
 
             module.setValue("Open")
@@ -76,6 +87,7 @@ class ServingPage1 : AppCompatActivity() {
         module.addValueEventListener(moduleListener)
 
 
+        // master(주문)가 바뀔 때마다 카드 목록을 다시 만든다.
         table.addValueEventListener(object:ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (tableSnapshot in snapshot.children) {
@@ -108,6 +120,7 @@ class ServingPage1 : AppCompatActivity() {
 
         //Thread 이용하여 매초마다 업데이트 되는 방식
         val handler = Handler(Looper.getMainLooper())
+        // 상태바(시간·배터리)를 계속 갱신하는 반복 작업. (10ms 간격이라 실제로는 매우 자주 호출된다)
         val runnable = object : Runnable {
             override fun run() {
                 updateUI()
@@ -119,6 +132,7 @@ class ServingPage1 : AppCompatActivity() {
     }
 
     //배터리&시간
+    // 상단 상태바 갱신: 현재 시각(오전/오후 hh:mm:ss)과 배터리 잔량(%)
     private fun updateUI() {
         // Set the time
         val textTime = findViewById<TextView>(R.id.text_time)
@@ -135,6 +149,7 @@ class ServingPage1 : AppCompatActivity() {
     }
 
     //배터리 계산
+    // ACTION_BATTERY_CHANGED 브로드캐스트에서 배터리 잔량(0~100)을 읽는다. 실패하면 -1
     private fun getBatteryLevel(): Int {
         return try {
             val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
@@ -149,6 +164,7 @@ class ServingPage1 : AppCompatActivity() {
     }
 
     //
+    // 배터리 잔량에 맞는 배터리 아이콘으로 바꾼다. (100 / 70↑ / 50↑ / 그 외)
     fun someFunction(returnData: String) {
         val Image_battery = findViewById<ImageFilterView>(R.id.Image_battery)
         when {

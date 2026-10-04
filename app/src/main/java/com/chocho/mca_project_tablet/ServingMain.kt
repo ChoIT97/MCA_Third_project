@@ -18,6 +18,12 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import java.util.*
 
+/**
+ * [서빙 모드 - 대기/이동 화면]
+ *
+ * 로봇 얼굴 화면. 터치하면 서빙할 주문 목록(ServingPage1)으로 이동한다.
+ * 로봇이 테이블에 도착해 Firebase Sound="Sound" 를 보내면 TTS(한국어)로 안내 문구를 두 번 읽는다.
+ */
 class ServingMain : AppCompatActivity(), TextToSpeech.OnInitListener  {
 
 
@@ -62,6 +68,7 @@ class ServingMain : AppCompatActivity(), TextToSpeech.OnInitListener  {
         tts = TextToSpeech(this, this) //tts 에 TextToSpeech 값 넣어줌
 
         //사운드 관련 파이어베이스
+        // 로봇 도착 신호(Sound="Sound") → 음성 안내
         soundListener = object : ValueEventListener {
 
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -91,6 +98,7 @@ class ServingMain : AppCompatActivity(), TextToSpeech.OnInitListener  {
         customToastView(servingToastMessage)
 
         //화면 터치시 이동
+        // 얼굴 터치 → 서빙 주문 목록
         robot.setOnClickListener {
 
             netPageIntent = Intent(this, ServingPage1::class.java)
@@ -100,6 +108,8 @@ class ServingMain : AppCompatActivity(), TextToSpeech.OnInitListener  {
         }
 
         //화면 이동 관련 파이어베이스
+        // 로봇에 끼운 모듈(NFC 태그)이 바뀌면 로딩 화면을 거쳐 해당 모드로 전환한다.
+        // NFC 값: "None"=처음 화면, "Hotel"=호텔 모드, "Serving"=서빙 모드
         nfc.addValueEventListener(object : ValueEventListener {
 
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -136,12 +146,14 @@ class ServingMain : AppCompatActivity(), TextToSpeech.OnInitListener  {
     }
 
     //tts 함수
+    // 안내 문구를 TTS 로 읽는다. 문장을 두 번 이어 붙여 약 10초 동안 안내한다.
     private fun startTTS(text: String) {
         //10초 정도 text 두번 출력
         tts!!.speak(text+text, TextToSpeech.QUEUE_FLUSH, null, "")
 
     }
 
+    // TTS 엔진 준비 완료 콜백: 언어를 한국어로 설정
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             // set US English as language for tts
@@ -158,6 +170,10 @@ class ServingMain : AppCompatActivity(), TextToSpeech.OnInitListener  {
         }
     }
 
+    /**
+     * 화면 가운데에 커스텀 토스트(activity_custom_toast.xml)를 띄운다.
+     * 주의: activity_custom_toast.xml 레이아웃이 저장소에 없어 그대로는 빌드되지 않는다.
+     */
     private fun customToastView(text: String) {
         val inflater = layoutInflater
         val layout: View = inflater.inflate(R.layout.activity_custom_toast, findViewById<ViewGroup>(R.id.toast_layout_root))
@@ -181,6 +197,7 @@ class ServingMain : AppCompatActivity(), TextToSpeech.OnInitListener  {
         super.onDestroy()
     }
 
+    // 화면을 떠나면 Sound 리스너 해제 (다른 화면에서 음성이 나오지 않도록)
     override fun onStop() {
         super.onStop()
         sound.removeEventListener(soundListener)

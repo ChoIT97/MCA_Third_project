@@ -9,6 +9,12 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
 
+/**
+ * [주문 데이터 저장소]
+ *
+ * Firebase "master" 노드(결제가 끝난 주문 목록)를 실시간 구독해서 Meat 목록 LiveData 로 내보낸다.
+ * master 는 MCA_Restaurant 앱의 PaymentListActivity 가 결제 승인 후 저장한다.
+ */
 class Table1ActivityRepo {
 
     fun getData(): LiveData<MutableList<Meat>> {
