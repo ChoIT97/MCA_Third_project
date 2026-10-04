@@ -15,6 +15,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
+/**
+ * [서빙 테이블 카드 어댑터]
+ *
+ * 카드 한 장(activity_serving_item.xml): 테이블 이름 / 주문 목록(안쪽 RecyclerView) / [이 동] 버튼
+ * [이 동] → Firebase Start="Serving_Start" 로 로봇 출발 신호를 보내고 ServingMain(얼굴 화면)으로 이동.
+ *
+ * 현재는 모든 카드가 같은 master 전체 목록을 보여준다. (2번 테이블 분기는 주석 처리됨)
+ */
 class ServingAdapter(private val items: List<String>,private val context: Context) : RecyclerView.Adapter<ServingAdapter.ViewHolder>() {
     private val database = Firebase.database
     private val move = database.reference.child("Start")
@@ -32,6 +40,7 @@ class ServingAdapter(private val items: List<String>,private val context: Contex
         holder.recyclerView2.setHasFixedSize(true)
 //        Log.d("확인용4",items[0])
 //        Log.d("확인용5",items[1])
+        // 첫 키가 "0" 이면 master 전체 주문을 구독해서 안쪽 목록에 표시
         if (items[0] =="0"){
             val viewModel = ViewModelProvider(parent.context as ServingPage1, ViewModelProvider.AndroidViewModelFactory.getInstance((parent.context as ServingPage1).application)).get(SubViewModel::class.java)
             viewModel.table1Data().observe(parent.context as ServingPage1, Observer {
@@ -46,6 +55,7 @@ class ServingAdapter(private val items: List<String>,private val context: Contex
             })
         }
 
+        // [이 동] 버튼: 로봇 출발 신호
         holder.button2.setOnClickListener {
             move.setValue("Serving_Start")
             val intent = Intent(context, ServingMain::class.java)
@@ -73,6 +83,7 @@ class ServingAdapter(private val items: List<String>,private val context: Contex
     }
 
     // 뷰 홀더에 데이터 바인딩
+    // 키("0","1","2")를 "1번/2번/3번 테이블" 이름으로 바꿔 표시
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
         val itemTable = when(item){

@@ -13,6 +13,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 
+/**
+ * [모드 전환 로딩 화면]
+ *
+ * 2초 동안 로딩 애니메이션과 0% → 100% 진행률을 보여준 뒤 다음 화면으로 이동한다.
+ * Intent 의 "key1" 값: "0"=대기 화면(Main), "1"=호텔(HotelMain), "2"=서빙(ServingMain)
+ */
 class MainLoading : AppCompatActivity() {
 
     private var delayMillis = 2000L //gif 이미지 켜저있는 시간
@@ -63,12 +69,14 @@ class MainLoading : AppCompatActivity() {
         }
 
 
+        // 로딩 GIF 재생 (주의: raw/spiner5 가 저장소에 없어 그대로는 빌드되지 않는다)
         Glide.with(this).load(R.raw.spiner5).into(progressBar)
 
 
         //startCountdown 함수
         startCountdown(delayMillis, 1000L, txLoading, progressBar, percent, mainIntentKey, this)
 
+        // 2초 뒤 key1 값에 따라 다음 화면으로 이동 (실제 화면 이동은 여기서 일어난다)
         Handler(Looper.myLooper()!!).postDelayed({
 
             progressBar.isVisible = false
@@ -98,6 +106,12 @@ class MainLoading : AppCompatActivity() {
 
 
     //이미지 떠있는 시간 계산하는 코드
+    /**
+     * 1초마다 진행률(%)을 텍스트로 표시하는 카운트다운.
+     *
+     * 끝나면 이 로딩 화면을 닫는다. onFinish 의 "None"/"Hotel"/"Serving" 분기는
+     * key1 이 "0"/"1"/"2" 형식이라 실제로는 실행되지 않고 finish() 만 동작한다.
+     */
     private fun startCountdown(
         millisInFuture: Long,  //카운트다운이 진행될 총 시간 (밀리초)
         countDownInterval: Long, //카운트다운의 각 틱 간격 (밀리초)

@@ -16,6 +16,14 @@ import com.google.firebase.database.ValueEventListener
 import com.google.zxing.integration.android.IntentIntegrator
 import java.util.*
 
+/**
+ * [호텔 모드 - 도착 후 QR 확인]
+ *
+ * 로봇 이동 중에는 얼굴 화면을 보여준다.
+ * 목적지에 도착해 로봇이 Firebase QR="QR" 을 보내면 전면 카메라 QR 스캐너(zxing)를 띄운다.
+ * 스캔 값이 HotelPage1 에서 입력한 호실("go")과 같으면 서랍 열기 화면(HotelPage2)으로,
+ * 다르면 QR 신호를 다시 보내 재스캔한다.
+ */
 class HotelPage3 : AppCompatActivity() {
 
     private lateinit var integrator: IntentIntegrator
@@ -44,6 +52,7 @@ class HotelPage3 : AppCompatActivity() {
 
     private fun init() {
 
+        // 로봇의 도착 신호(QR="QR")를 받으면 QR 스캔 시작
         qrListener = object : ValueEventListener {
 
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -70,6 +79,7 @@ class HotelPage3 : AppCompatActivity() {
     }
 
     //qr코드 주소 반환 시에
+    // QR 스캔 결과 처리: 입력한 호실 번호와 비교
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
         val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
@@ -107,6 +117,10 @@ class HotelPage3 : AppCompatActivity() {
     }
 
     //커스텀 메세지
+    /**
+     * 화면 가운데에 커스텀 토스트(activity_custom_toast.xml)를 띄운다.
+     * 주의: activity_custom_toast.xml 레이아웃이 저장소에 없어 그대로는 빌드되지 않는다.
+     */
     private fun customToastView(text: String) {
         val inflater = layoutInflater
         val layout: View = inflater.inflate(R.layout.activity_custom_toast, findViewById(R.id.toast_layout_root))

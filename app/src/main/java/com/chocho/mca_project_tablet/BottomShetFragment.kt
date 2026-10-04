@@ -24,6 +24,15 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.database.*
 import java.lang.Math.min
 
+/**
+ * [서랍 잠금 바텀시트]
+ *
+ * HotelPage1 의 🔓 버튼으로 여는 화면 높이 90% 바텀시트.
+ * 로봇 그림 위 투명 버튼 3개(서랍 1~3칸)를 누를 때마다 해당 칸의 잠금/해제를 토글한다.
+ * Firebase Hotel_Motor/Hotel_Motor1~3 값: First_Lock ↔ First_Unlock, Second_…, Third_…
+ *
+ * 주의: 배경 그림 img_13 이 저장소에 없어 그대로는 빌드되지 않는다.
+ */
 class BottomSheetFragment : BottomSheetDialogFragment() {
 
     // Firebase
@@ -76,6 +85,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         val motorButton2 = view.findViewById<ImageButton>(R.id.btn_motor2)
         val motorButton3 = view.findViewById<ImageButton>(R.id.btn_motor3)
 
+        // 서랍 상태가 바뀌면 각 버튼 이미지를 잠김/열림으로 갱신
         motor.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 setMotorLockStates(snapshot, listOf(motor1 to motorButton1, motor2 to motorButton2, motor3 to motorButton3))
@@ -87,6 +97,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         })
 
         // SharedPreferences 인스턴스 가져오기
+        // 마지막 잠금 상태를 기기에도 저장해 둔다. (현재 다시 읽는 코드는 없음)
         val prefs = context?.getSharedPreferences(PREFS_FILENAME, Context.MODE_PRIVATE)
 
         setLockButtonClickHandler(motorButton1, motor1, prefs, MOTOR1KEY)
@@ -120,6 +131,9 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         motorRef.setValue(state)
     }
 
+    /**
+     * 현재 값을 한 번 읽어서 "_Lock" 이면 "_Unlock" 으로, 아니면 "_Lock" 으로 바꿔 저장한다.
+     */
     private fun handleLockButtonClick(
         motorRef: DatabaseReference,
         btnLock: ImageButton,
@@ -151,6 +165,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     }
 
 
+    // 바텀시트를 펼친 상태로 고정하고 높이를 화면의 90% 로, 드래그로 닫히지 않게 설정
     private fun setupRatio(bottomSheetDialog: BottomSheetDialog) {
         val bottomSheet = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as View
         val behavior = BottomSheetBehavior.from<View>(bottomSheet)
